@@ -1,3 +1,4 @@
+import sys
 import argparse
 
 from selenium import webdriver
@@ -5,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import WebDriverException
 
 
 def get_web_driver():
@@ -52,19 +54,23 @@ def main(argv):
                         help="unsee.cc IDs to download")
     args = parser.parse_args(argv[1:])
 
-    driver = get_web_driver()
+    driver = None
+    try:
+        driver = get_web_driver()
+    except WebDriverException as err:
+        print("error: {:s}".format(err.msg), file=sys.stderr)
+        exit(1)
 
     for image_id in args.ids:
         # noinspection PyBroadException
         try:
-            print("Downloading {:s}... ".format(image_id), end='')
+            print("Downloading {:s}... ".format(image_id), end='', flush=True)
             unsee_download(driver, image_id, args.out_dir)
-            print("done")
+            print("done", flush=True)
         except Exception:
-            print("fail")
+            print("fail", flush=True)
     driver.quit()
 
 
 if __name__ == '__main__':
-    import sys
     main(sys.argv)
