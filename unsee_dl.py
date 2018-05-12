@@ -46,20 +46,19 @@ def unsee_download(driver, image_id, out_path='.'):
     canvas.screenshot("{}/{}.png".format(out_path, image_id))
 
 
-def main(argv):
+def main():
     parser = argparse.ArgumentParser(description="unsee.cc downloader")
     parser.add_argument('-o', '--out', action="store", dest="out_dir", type=str, default=".",
                         help="Output directory")
     parser.add_argument('ids', action="store", nargs='+',
                         help="unsee.cc IDs to download")
-    args = parser.parse_args(argv[1:])
+    args = parser.parse_args(sys.argv[1:])
 
     driver = None
     try:
         driver = get_web_driver()
     except WebDriverException as err:
-        print("error: {:s}".format(err.msg), file=sys.stderr)
-        exit(1)
+        parser.error(err.msg)
 
     for image_id in args.ids:
         # noinspection PyBroadException
@@ -73,4 +72,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()
