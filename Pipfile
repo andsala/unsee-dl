@@ -4,9 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-selenium = ">=3.11.0"
+requests = ">=2.21.0"
+websockets = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.6"
+python_version = ">=3.6"
