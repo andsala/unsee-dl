@@ -6,8 +6,6 @@
 
 # Usage
 
-Requires [Mozilla Firefox](https://www.mozilla.org/it/firefox/) and [geckodriver](https://github.com/mozilla/geckodriver).
-
 ```
 pip install unsee-dl
 
