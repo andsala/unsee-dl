@@ -1,7 +1,7 @@
-from setuptools import setup
-
 from codecs import open
 from os import path
+
+from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
 
@@ -10,7 +10,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='unsee-dl',
-    version='1.0.2',
+    version='1.1.0',
     description='unsee.cc downloader',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -30,7 +30,10 @@ setup(
         'Issues': 'https://github.com/andsala/unsee-dl/issues',
     },
     py_modules=["unsee_dl"],
-    install_requires=['selenium>=3.11"'],
+    install_requires=[
+        'requests==2.21.0',
+        'websockets==7.0'
+    ],
     python_requires='>=3',
     entry_points={
         'console_scripts': [
