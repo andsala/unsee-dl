@@ -11,7 +11,7 @@ import websockets
 
 from . import names
 
-VERSION = '1.1.1'
+VERSION = '1.1.2'
 
 UNSEE_WEBSOCKET_URL = 'wss://ws.unsee.cc/{}/'
 
