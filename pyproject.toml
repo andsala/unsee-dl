@@ -24,10 +24,10 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.6"
-requests = "^2.21"
 websockets = "^7.0"
 
 [tool.poetry.dev-dependencies]
+requests = "^2.21"
 
 [tool.poetry.scripts]
 unsee-dl = 'unsee_dl:main'
