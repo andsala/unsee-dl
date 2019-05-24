@@ -3,6 +3,7 @@ import json
 import logging
 import ssl
 import sys
+from urllib.parse import urlparse
 from hashlib import sha256
 from pathlib import Path
 
@@ -44,6 +45,16 @@ def find(f, seq):
         if f(item):
             return item
     return None
+
+
+def get_album_id_from_url(album_url):
+    url = urlparse(album_url)
+    if url.netloc not in ('', 'unsee.cc'):
+        return None
+    path = [path for path in url.path.split('/') if len(path) > 0]
+    if len(path) < 1:
+        return None
+    return path[0]
 
 
 async def download_album(album_id, out_path='.', group_album=True):
@@ -118,6 +129,7 @@ async def main():
 
     # Download images
     for album_id in args.album_ids:
+        album_id = get_album_id_from_url(album_id)
         # noinspection PyBroadException
         try:
             print("Downloading album {:s}...".format(album_id))
