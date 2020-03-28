@@ -1,6 +1,6 @@
 import asyncio
 
-from unsee import unsee_dl
+from unsee_dl import unsee_dl
 
 
 def main():

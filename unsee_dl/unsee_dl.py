@@ -9,9 +9,7 @@ from pathlib import Path
 
 import websockets
 
-from . import names
-
-VERSION = '1.1.2'
+from . import names, __version__
 
 UNSEE_WEBSOCKET_URL = 'wss://ws.unsee.cc/{}/'
 
@@ -115,7 +113,7 @@ async def download_album(album_id, out_path='.', group_album=True):
 
 async def main():
     parser = argparse.ArgumentParser(description="unsee.cc downloader")
-    parser.add_argument('--version', action='version', help="Print the version", version=f'%(prog)s {VERSION}')
+    parser.add_argument('--version', action='version', help="Print the version", version=f'%(prog)s {__version__}')
     parser.add_argument('-o', '--out', action="store", dest="out_dir", type=str, default=".",
                         help="Output directory")
     parser.add_argument('-v', '--verbose', action="store_const", dest="verbose", default=False, const=True,
