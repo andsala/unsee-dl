@@ -1,5 +1,6 @@
 from hashlib import sha256
 from pathlib import Path
+from urllib.parse import urlparse
 
 
 class UnseeImage:
@@ -64,3 +65,19 @@ class UnseeImage:
         out_path.mkdir(parents=True, exist_ok=True)
 
         return out_path.joinpath(file_basename)
+
+
+def get_album_id_from_url(album_url):
+    url = urlparse(album_url)
+    if url.netloc in ('', 'unsee.cc'):  # old unsee.cc
+        path = [path for path in url.path.split('/') if len(path) > 0]
+        if len(path) < 1:
+            return None
+        return path[0]
+    elif url.netloc in ('app.unsee.cc', 'beta-app.unsee.cc'):  # new frontend or beta
+        return url.fragment
+    return None
+
+
+def is_beta_album_id(album_id):
+    return len(album_id) > 8
