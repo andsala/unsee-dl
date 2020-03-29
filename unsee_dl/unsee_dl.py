@@ -4,38 +4,14 @@ import logging
 import ssl
 import sys
 from urllib.parse import urlparse
-from hashlib import sha256
-from pathlib import Path
 
 import websockets
 
 from . import names, __version__
+from .unsee import UnseeImage
+from .unsee_beta import download_album as download_album_beta
 
 UNSEE_WEBSOCKET_URL = 'wss://ws.unsee.cc/{}/'
-
-
-class UnseeImage:
-
-    def __init__(self, album_id, image_data):
-        digest = sha256(image_data).hexdigest()
-
-        self.id = '{}_{}'.format(album_id, digest[:16])
-        self.album_id = album_id
-        self.image_data = image_data
-
-    def write_file(self, out_path='.', group_album=False):
-        file_basename = '{}.jpg'.format(self.id)
-        out_path = Path(out_path)
-        if group_album:
-            out_path = out_path.joinpath(self.album_id)
-        out_file_path = out_path.joinpath(file_basename)
-
-        out_path.mkdir(parents=True, exist_ok=True)
-
-        with out_file_path.open('wb') as file:
-            file.write(self.image_data)
-
-        return str(out_file_path)
 
 
 def find(f, seq):
@@ -47,12 +23,18 @@ def find(f, seq):
 
 def get_album_id_from_url(album_url):
     url = urlparse(album_url)
-    if url.netloc not in ('', 'unsee.cc'):
-        return None
-    path = [path for path in url.path.split('/') if len(path) > 0]
-    if len(path) < 1:
-        return None
-    return path[0]
+    if url.netloc in ('', 'unsee.cc'):  # old unsee.cc
+        path = [path for path in url.path.split('/') if len(path) > 0]
+        if len(path) < 1:
+            return None
+        return path[0]
+    elif url.netloc in ('app.unsee.cc', 'beta-app.unsee.cc'):  # new frontend or beta
+        return url.fragment
+    return None
+
+
+def is_beta_album_id(album_id):
+    return len(album_id) > 8
 
 
 async def download_album(album_id, out_path='.', group_album=True):
@@ -97,11 +79,11 @@ async def download_album(album_id, out_path='.', group_album=True):
 
             # noinspection PyBroadException
             try:
-                image = UnseeImage(album_id, data)
-                image_path = image.write_file(out_path=out_path, group_album=group_album)
+                image = UnseeImage(album_id)
+                image_path = image.write_file_from_blob(data, out_path=out_path, group_album=group_album)
                 logging.debug('Wrote image {}'.format(image_path))
 
-                image_info = find(lambda info: info['id'] == image.id, images_info)
+                image_info = find(lambda info: info['id'] == image.image_id, images_info)
                 if image_info is not None:
                     images_info.remove(image_info)
             except:
@@ -128,12 +110,16 @@ async def main():
     # Download images
     for album_id in args.album_ids:
         album_id = get_album_id_from_url(album_id)
+
         # noinspection PyBroadException
         try:
             print("Downloading album {:s}...".format(album_id))
-            await download_album(album_id, args.out_dir, group_album=args.group_album)
+            if is_beta_album_id(album_id):
+                await download_album_beta(album_id, args.out_dir, group_album=args.group_album)
+            else:
+                await download_album(album_id, args.out_dir, group_album=args.group_album)
             logging.info("Download completed for album {}.".format(album_id))
-        except Exception:
-            logging.error("Failed downloading album {}.".format(album_id))
+        except Exception as ex:
+            logging.error("Failed downloading album {}.".format(album_id), exc_info=ex)
 
     logging.shutdown()
