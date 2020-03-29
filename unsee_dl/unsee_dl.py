@@ -1,15 +1,12 @@
-import argparse
 import json
 import logging
 import ssl
-import sys
 from urllib.parse import urlparse
 
 import websockets
 
-from . import names, __version__
+from . import names
 from .unsee import UnseeImage
-from .unsee_beta import download_album as download_album_beta
 
 UNSEE_WEBSOCKET_URL = 'wss://ws.unsee.cc/{}/'
 
@@ -91,35 +88,3 @@ async def download_album(album_id, out_path='.', group_album=True):
 
             if len(images_info) <= 0:
                 await ws_imgpush.close()
-
-
-async def main():
-    parser = argparse.ArgumentParser(description="unsee.cc downloader")
-    parser.add_argument('--version', action='version', help="Print the version", version=f'%(prog)s {__version__}')
-    parser.add_argument('-o', '--out', action="store", dest="out_dir", type=str, default=".",
-                        help="Output directory")
-    parser.add_argument('-v', '--verbose', action="store_const", dest="verbose", default=False, const=True,
-                        help="Enable verbose output")
-    parser.add_argument('-g', '--group', action="store_const", dest="group_album", default=False, const=True,
-                        help="Group each album in its own directory")
-    parser.add_argument('album_ids', action="store", nargs='+', help="unsee.cc album IDs to download")
-    args = parser.parse_args(sys.argv[1:])
-
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
-
-    # Download images
-    for album_id in args.album_ids:
-        album_id = get_album_id_from_url(album_id)
-
-        # noinspection PyBroadException
-        try:
-            print("Downloading album {:s}...".format(album_id))
-            if is_beta_album_id(album_id):
-                await download_album_beta(album_id, args.out_dir, group_album=args.group_album)
-            else:
-                await download_album(album_id, args.out_dir, group_album=args.group_album)
-            logging.info("Download completed for album {}.".format(album_id))
-        except Exception as ex:
-            logging.error("Failed downloading album {}.".format(album_id), exc_info=ex)
-
-    logging.shutdown()
