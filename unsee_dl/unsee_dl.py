@@ -76,8 +76,8 @@ async def download_album(album_id, out_path='.', group_album=True):
 
             # noinspection PyBroadException
             try:
-                image = UnseeImage(album_id)
-                image_path = image.write_file_from_blob(data, out_path=out_path, group_album=group_album)
+                image = UnseeImage(album_id, out_path=out_path, group_album=group_album)
+                image_path = image.write_file_from_blob(data)
                 logging.debug('Wrote image {}'.format(image_path))
 
                 image_info = find(lambda info: info['id'] == image.image_id, images_info)

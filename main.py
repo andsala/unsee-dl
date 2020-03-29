@@ -4,7 +4,7 @@ import logging
 import sys
 
 from unsee_dl import __version__ as unsee_dl_version
-from unsee_dl.unsee_beta import download_album as download_album_beta
+from unsee_dl.unsee_beta import Client
 from unsee_dl.unsee_dl import get_album_id_from_url, is_beta_album_id, download_album
 
 
@@ -27,7 +27,7 @@ async def run_downloader():
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
 
     # Download images
-    album_ids = [get_album_id_from_url(url) for url in args.album_id]
+    album_ids = [get_album_id_from_url(url) for url in args.album_ids]
     album_ids_old_version = filter(lambda x: not is_beta_album_id(x), album_ids)
     album_ids_beta_version = filter(lambda x: is_beta_album_id(x), album_ids)
 
@@ -40,14 +40,18 @@ async def run_downloader():
         except Exception as ex:
             logging.error("Failed downloading album {}.".format(album_id), exc_info=ex)
 
-    for album_id in album_ids_beta_version:
-        # noinspection PyBroadException
-        try:
-            print("Downloading album {:s}...".format(album_id))
-            await download_album_beta(album_id, args.out_dir, group_album=args.group_album)
-            logging.info("Download completed for album {}.".format(album_id))
-        except Exception as ex:
-            logging.error("Failed downloading album {}.".format(album_id), exc_info=ex)
+    album_ids_beta_version = list(album_ids_beta_version)
+    if len(album_ids_beta_version) > 0:
+        async with Client(out_path=args.out_dir, group_album=args.group_album) as client:
+            await client.anonymous_login()
+            for album_id in album_ids_beta_version:
+                # noinspection PyBroadException
+                try:
+                    print("Downloading album {:s}...".format(album_id))
+                    await client.download_album(album_id)
+                    logging.info("Download completed for album {}.".format(album_id))
+                except Exception as ex:
+                    logging.error("Failed downloading album {}.".format(album_id), exc_info=ex)
 
     logging.shutdown()
 
