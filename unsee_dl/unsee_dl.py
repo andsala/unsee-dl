@@ -79,6 +79,9 @@ class Client:
         else:
             print('Found album {} with {} images.'.format(album_id, len(images_info)))
 
+        if len(images_info) <= 0:
+            return
+
         # Imgpush WS
         async with self.session.ws_connect(_UNSEE_WEBSOCKET_URL.format('imgpush') + ws_params,
                                            ssl=ssl_context) as ws_imgpush:

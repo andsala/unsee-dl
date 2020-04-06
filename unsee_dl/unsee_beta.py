@@ -52,30 +52,13 @@ class Client:
     fragment AuthPayloadFragment on AuthPayload {
       token
       tokenRefresh
-      user {
-        ...UserFragment
-        __typename
-      }
-      __typename
-    }
-    
-    fragment UserFragment on User {
-      id
-      name
-      role
-      status
-      created
-      updated
-      isEu
-      email
-      allowInvites
-      targetedAds
       __typename
     }"""
         }
         async with self.session.post('https://api.unsee.cc/graphql', json=gql_body) as response:
             content = await response.json()
-            self.token = content['data']['login']['token']
+            login_data = content['data']['login']
+            self.token = login_data['token']
 
     async def download_album(self, album_id):
         """
@@ -120,6 +103,10 @@ class Client:
         async with self.session.post(_GRAPHQL_URL, json=gql_body, headers=headers) as response:
             content = await response.json()
             album_items = content['data']['getImages']
+
+            if not album_items or len(album_items) <= 0:
+                print(f"No images found in album {album_id}")
+                return
 
             print('Found album {} with {} images.'.format(album_id, len(album_items)))
 
