@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 import aiohttp
 
@@ -37,29 +38,31 @@ class Client:
         """
         Login with an anonymous token
         """
+        identity = str(uuid.uuid4())
         gql_body = {
-            'operationName': 'loginAnonymous',
-            'variables': {},
-            'query': """
-    mutation loginAnonymous {
-      login {
+            "operationName": "getToken",
+            "variables": {"identity": identity},
+            "query": """
+query getToken($identity: ID!, $code: ID, $refreshToken: ID, $name: String) {
+    getToken(identity: $identity, code: $code, refreshToken: $refreshToken, name: $name) {
         ...AuthPayloadFragment
         __typename
-      }
     }
-    
-    fragment AuthPayloadFragment on AuthPayload {
-      token
-      tokenRefresh
-      __typename
-    }""",
+}
+
+fragment AuthPayloadFragment on AuthPayload {
+    token
+    refreshToken
+    __typename
+}
+""",
         }
         async with self.session.post(
             "https://api.unsee.cc/graphql", json=gql_body
         ) as response:
             content = await response.json()
-            login_data = content["data"]["login"]
-            self.token = login_data["token"]
+            tokens = content["data"]["getToken"]
+            self.token = tokens["token"]
 
     async def download_album(self, album_id):
         """
@@ -73,6 +76,73 @@ class Client:
             )
             await self._download_and_save_image(image, album_image["url"])
 
+    async def _create_session(self, album_id):
+        # getSessions
+        headers = {"authorization": self.token}
+        gql_body = {
+            "operationName": "getSessions",
+            "variables": {"filter": {"chat": album_id}},
+            "query": """
+query getSessions($filter: SessionFilter!, $pagination: Pagination) {
+    getSessions(filter: $filter, pagination: $pagination) {
+        ...SessionFragment
+        __typename
+    }
+}
+
+fragment SessionFragment on Session {
+    id
+    role
+    status
+    online
+    created
+    viewing
+    user
+    name
+    __typename
+}
+""",
+        }
+        async with self.session.post(
+            "https://api.unsee.cc/graphql", json=gql_body, headers=headers
+        ) as response:
+            content = await response.json()
+            if "errors" in content and len(content["errors"]) > 0:
+                raise Exception(content["errors"])
+
+        # create session
+        headers = {"authorization": self.token}
+        gql_body = {
+            "operationName": "sessionCreate",
+            "variables": {"input": {"chat": album_id, "referrer": None}},
+            "query": """
+mutation sessionCreate($input: SessionCreateInput!) {
+    sessionCreate(input: $input) {
+        ...SessionFragment
+        __typename
+    }
+}
+
+fragment SessionFragment on Session {
+    id
+    role
+    status
+    online
+    created
+    viewing
+    user
+    name
+    __typename
+}
+""",
+        }
+        async with self.session.post(
+            "https://api.unsee.cc/graphql", json=gql_body, headers=headers
+        ) as response:
+            content = await response.json()
+            if "errors" in content and len(content["errors"]) > 0:
+                raise Exception(content["errors"])
+
     async def _original_size_images(self, album_id):
         """
         Get original size image for the album
@@ -81,23 +151,55 @@ class Client:
         :return: generator with each image in album
         :rtype: Generator
         """
+
+        await self._create_session(album_id)
+
         headers = {"authorization": self.token}
         gql_body = {
             "operationName": "getImages",
             "variables": {"filter": {"chat": album_id}, "pagination": {"offset": 0}},
             "query": """
-    query getImages($filter: ImageFilter!, $pagination: Pagination) {
+query getImages($filter: ImageFilter!, $pagination: Pagination) {
     getImages(filter: $filter, pagination: $pagination) {
-     id
-     url
-     __typename
+        ...ImageFragment
+        __typename
     }
-    }""",
+}
+
+fragment ImageFragment on Image {
+    id
+    session {
+        ...SessionFragment
+        __typename
+    }
+    created
+    updated
+    url(size: small)
+    urlBig: url(size: big)
+    hash
+    __typename
+}
+
+fragment SessionFragment on Session {
+    id
+    role
+    status
+    online
+    created
+    viewing
+    user
+    name
+    __typename
+}
+""",
         }
         async with self.session.post(
             _GRAPHQL_URL, json=gql_body, headers=headers
         ) as response:
             content = await response.json()
+            if "errors" in content and len(content["errors"]) > 0:
+                raise Exception(content["errors"])
+
             album_items = content["data"]["getImages"]
 
             if not album_items or len(album_items) <= 0:
