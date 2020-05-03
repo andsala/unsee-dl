@@ -1,4 +1,3 @@
-
 import random
 
 NAMES = [
@@ -1664,10 +1663,8 @@ NAMES = [
     "Zuher",
     "Zuhri",
     "Zuri",
-
 ]
 
 
 def get_random():
     return random.choice(NAMES)
-

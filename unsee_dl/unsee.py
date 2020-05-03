@@ -4,8 +4,7 @@ from urllib.parse import urlparse
 
 
 class UnseeImage:
-
-    def __init__(self, album_id, image_id=None, out_path='.', group_album=False):
+    def __init__(self, album_id, image_id=None, out_path=".", group_album=False):
         """
         :param album_id: album id
         :param image_id: image id
@@ -22,12 +21,12 @@ class UnseeImage:
     def write_file_from_blob(self, image_data):
         if not self.image_id:
             digest = sha256(image_data).hexdigest()
-            self.image_id = '{}_{}'.format(self.album_id, digest[:16])
+            self.image_id = "{}_{}".format(self.album_id, digest[:16])
 
-        file_basename = '{}.jpg'.format(self.image_id)
+        file_basename = "{}.jpg".format(self.image_id)
         out_file_path = self._get_output_file_path(file_basename)
 
-        with out_file_path.open('wb') as file:
+        with out_file_path.open("wb") as file:
             file.write(image_data)
 
         return str(out_file_path)
@@ -45,10 +44,10 @@ class UnseeImage:
         if not self.image_id:
             raise ValueError("image id not set")
 
-        file_basename = '{}_{}.jpg'.format(self.album_id, self.image_id)
+        file_basename = "{}_{}.jpg".format(self.album_id, self.image_id)
         out_file_path = self._get_output_file_path(file_basename)
 
-        with out_file_path.open('wb') as file:
+        with out_file_path.open("wb") as file:
             while True:
                 chunk = await stream.read(buffer_size)
                 if not chunk:
@@ -69,12 +68,12 @@ class UnseeImage:
 
 def get_album_id_from_url(album_url):
     url = urlparse(album_url)
-    if url.netloc in ('', 'unsee.cc'):  # old unsee.cc
-        path = [path for path in url.path.split('/') if len(path) > 0]
+    if url.netloc in ("", "unsee.cc"):  # old unsee.cc
+        path = [path for path in url.path.split("/") if len(path) > 0]
         if len(path) < 1:
             return None
         return path[0]
-    elif url.netloc in ('app.unsee.cc', 'beta-app.unsee.cc'):  # new frontend or beta
+    elif url.netloc in ("app.unsee.cc", "beta-app.unsee.cc"):  # new frontend or beta
         return url.fragment
     return None
 

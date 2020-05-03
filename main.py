@@ -15,14 +15,42 @@ def main():
 
 async def run_downloader():
     parser = argparse.ArgumentParser(description="unsee.cc downloader")
-    parser.add_argument('--version', action='version', help="Print the version", version=f'%(prog)s {unsee_dl_version}')
-    parser.add_argument('-o', '--out', action="store", dest="out_dir", type=str, default=".",
-                        help="Output directory")
-    parser.add_argument('-v', '--verbose', action="store_const", dest="verbose", default=False, const=True,
-                        help="Enable verbose output")
-    parser.add_argument('-g', '--group', action="store_const", dest="group_album", default=False, const=True,
-                        help="Group each album in its own directory")
-    parser.add_argument('album_ids', action="store", nargs='+', help="unsee.cc album IDs to download")
+    parser.add_argument(
+        "--version",
+        action="version",
+        help="Print the version",
+        version=f"%(prog)s {unsee_dl_version}",
+    )
+    parser.add_argument(
+        "-o",
+        "--out",
+        action="store",
+        dest="out_dir",
+        type=str,
+        default=".",
+        help="Output directory",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_const",
+        dest="verbose",
+        default=False,
+        const=True,
+        help="Enable verbose output",
+    )
+    parser.add_argument(
+        "-g",
+        "--group",
+        action="store_const",
+        dest="group_album",
+        default=False,
+        const=True,
+        help="Group each album in its own directory",
+    )
+    parser.add_argument(
+        "album_ids", action="store", nargs="+", help="unsee.cc album IDs to download"
+    )
     args = parser.parse_args(sys.argv[1:])
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
@@ -40,9 +68,13 @@ async def run_downloader():
                 await client.download_album(album_id)
                 logging.info("Download completed for album {}.".format(album_id))
             except Exception as ex:
-                logging.error("Failed downloading album {}.".format(album_id), exc_info=ex)
+                logging.error(
+                    "Failed downloading album {}.".format(album_id), exc_info=ex
+                )
 
-    async with ClientBeta(out_path=args.out_dir, group_album=args.group_album) as client:
+    async with ClientBeta(
+        out_path=args.out_dir, group_album=args.group_album
+    ) as client:
         await client.anonymous_login()
 
         for album_id in album_ids_beta_version:
@@ -52,10 +84,12 @@ async def run_downloader():
                 await client.download_album(album_id)
                 logging.info("Download completed for album {}.".format(album_id))
             except Exception as ex:
-                logging.error("Failed downloading album {}.".format(album_id), exc_info=ex)
+                logging.error(
+                    "Failed downloading album {}.".format(album_id), exc_info=ex
+                )
 
     logging.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
