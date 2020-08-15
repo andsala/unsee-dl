@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import logging
 import sys
+from typing import List
 
 from unsee_dl import __version__ as unsee_dl_version
 from unsee_dl.unsee import get_album_id_from_url, is_beta_album_id
@@ -11,6 +12,36 @@ from unsee_dl.unsee_dl import Client
 
 def main():
     asyncio.get_event_loop().run_until_complete(run_downloader())
+
+
+async def download_old(album_ids: List[str], out_dir: str, group_album: bool):
+    async with Client(out_path=out_dir, group_album=group_album) as client:
+        for album_id in album_ids:
+            # noinspection PyBroadException
+            try:
+                print("Downloading album {:s}...".format(album_id))
+                await client.download_album(album_id)
+                logging.info("Download completed for album {}.".format(album_id))
+            except Exception as ex:
+                logging.error(
+                    "Failed downloading album {}.".format(album_id), exc_info=ex
+                )
+
+
+async def download_beta(album_ids: List[str], out_dir: str, group_album: bool):
+    async with ClientBeta(out_path=out_dir, group_album=group_album) as client:
+        await client.anonymous_login()
+
+        for album_id in album_ids:
+            # noinspection PyBroadException
+            try:
+                print("Downloading album {:s}...".format(album_id))
+                await client.download_album(album_id)
+                logging.info("Download completed for album {}.".format(album_id))
+            except Exception as ex:
+                logging.error(
+                    "Failed downloading album {}.".format(album_id), exc_info=ex
+                )
 
 
 async def run_downloader():
@@ -57,36 +88,14 @@ async def run_downloader():
 
     # Download images
     album_ids = [get_album_id_from_url(url) for url in args.album_ids]
-    album_ids_old_version = filter(lambda x: not is_beta_album_id(x), album_ids)
-    album_ids_beta_version = filter(lambda x: is_beta_album_id(x), album_ids)
+    album_ids_old_version = list(filter(lambda x: not is_beta_album_id(x), album_ids))
+    album_ids_beta_version = list(filter(lambda x: is_beta_album_id(x), album_ids))
 
-    async with Client(out_path=args.out_dir, group_album=args.group_album) as client:
-        for album_id in album_ids_old_version:
-            # noinspection PyBroadException
-            try:
-                print("Downloading album {:s}...".format(album_id))
-                await client.download_album(album_id)
-                logging.info("Download completed for album {}.".format(album_id))
-            except Exception as ex:
-                logging.error(
-                    "Failed downloading album {}.".format(album_id), exc_info=ex
-                )
+    if len(album_ids_old_version) > 0:
+        await download_old(album_ids_old_version, args.out_dir, args.group_album)
 
-    async with ClientBeta(
-        out_path=args.out_dir, group_album=args.group_album
-    ) as client:
-        await client.anonymous_login()
-
-        for album_id in album_ids_beta_version:
-            # noinspection PyBroadException
-            try:
-                print("Downloading album {:s}...".format(album_id))
-                await client.download_album(album_id)
-                logging.info("Download completed for album {}.".format(album_id))
-            except Exception as ex:
-                logging.error(
-                    "Failed downloading album {}.".format(album_id), exc_info=ex
-                )
+    if len(album_ids_beta_version) > 0:
+        await download_beta(album_ids_beta_version, args.out_dir, args.group_album)
 
     logging.shutdown()
 
