@@ -4,10 +4,10 @@ import logging
 import sys
 from typing import List
 
-from unsee_dl import __version__ as unsee_dl_version
-from unsee_dl.unsee import get_album_id_from_url, is_beta_album_id
-from unsee_dl.unsee_beta import Client as ClientBeta
-from unsee_dl.unsee_dl import Client
+from unsee_cc import __version__ as unsee_dl_version
+from unsee_cc.unsee import get_album_id_from_url, is_beta_album_id
+from unsee_cc.unsee_beta import Client as ClientBeta
+from unsee_cc.unsee_dl import Client
 
 
 def main():

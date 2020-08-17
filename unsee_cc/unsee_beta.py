@@ -2,7 +2,7 @@ import logging
 
 import aiohttp
 
-from unsee_dl.unsee import UnseeImage
+from unsee_cc.unsee import UnseeImage
 
 _GRAPHQL_URL = "https://api2.unsee.cc/graphql"
 
