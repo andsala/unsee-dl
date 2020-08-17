@@ -1,4 +1,4 @@
-# [unsee.cc](https://unsee.cc) downloader
+# [unsee.cc](https://unsee.cc)/[unsee.co](https://unsee.co) downloader
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI](https://img.shields.io/pypi/v/unsee-dl.svg)](https://pypi.org/project/unsee-dl/)
