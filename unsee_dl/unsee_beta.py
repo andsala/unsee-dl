@@ -4,7 +4,7 @@ import aiohttp
 
 from unsee_dl.unsee import UnseeImage
 
-_GRAPHQL_URL = "https://api2.unsee.cc/graphql"
+_GRAPHQL_URL = "https://api3.unsee.cc/graphql"
 
 
 class Client:
@@ -42,16 +42,16 @@ class Client:
             "variables": {},
             "query": """
 query getToken($identity: ID, $code: ID, $refreshToken: ID, $name: String) {
- getToken(identity: $identity, code: $code, refreshToken: $refreshToken, name: $name) {
- ...AuthPayloadFragment
- __typename
- }
+  getToken(identity: $identity, code: $code, refreshToken: $refreshToken, name: $name) {
+    ...AuthPayloadFragment
+    __typename
+  }
 }
 
 fragment AuthPayloadFragment on AuthPayload {
- token
- refreshToken
- __typename
+  token
+  refreshToken
+  __typename
 }
 """,
         }
@@ -190,64 +190,32 @@ fragment ChatFragment on Chat {
         :rtype: Generator
         """
 
-        await self._create_session(album_id)
+        # await self._create_session(album_id)
 
         headers = {"authorization": f"Bearer {self.token}"}
         gql_body = {
-            "operationName": "getImages",
-            "variables": {"filter": {"chat": album_id}},
+            "operationName": "getAlbum",
+            "variables": {"chat": album_id},
             "query": """
-query getImages($filter: ImageFilter!, $pagination: Pagination) {
- getImages(filter: $filter, pagination: $pagination) {
- ...ImageFragment
- __typename
- }
+query getAlbum($chat: ID!) {
+  getAlbum(chat: $chat) {
+    images {
+      ...ImageFragment
+      __typename
+    }
+    __typename
+  }
 }
 
 fragment ImageFragment on Image {
- id
- session {
- ...SessionFragment
- __typename
- }
- created
- updated
- url(size: small)
- urlBig: url(size: big)
- hash
- __typename
-}
-
-fragment SessionFragment on Session {
- id
- role
- status
- chat {
- ...ChatFragment
- __typename
- }
- online
- created
- viewing
- user
- name
- __typename
-}
-
-fragment ChatFragment on Chat {
- id
- title
- ttl
- ttlLeft
- status
- description
- created
- updated
- allowDownloads
- allowUploads
- watermarkIp
- deleteAfter
- __typename
+  id
+  session
+  created
+  updated
+  url(size: small)
+  urlBig: url(size: big)
+  hash
+  __typename
 }
 """,
         }
@@ -258,7 +226,7 @@ fragment ChatFragment on Chat {
             if "errors" in content and len(content["errors"]) > 0:
                 raise Exception(content["errors"])
 
-            album_items = content["data"]["getImages"]
+            album_items = content["data"]["getAlbum"]["images"]
 
             if not album_items or len(album_items) <= 0:
                 print(f"No images found in album {album_id}")
