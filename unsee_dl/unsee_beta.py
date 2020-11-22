@@ -4,7 +4,7 @@ import aiohttp
 
 from unsee_dl.unsee import UnseeImage
 
-_GRAPHQL_URL = "https://api3.unsee.cc/graphql"
+_GRAPHQL_URL = "https://api.unsee.cc/graphql"
 
 
 class Client:
