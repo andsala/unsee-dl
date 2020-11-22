@@ -28,10 +28,9 @@ packages = [
 python = "^3.6"
 aiohttp = "^3.6.2"
 cchardet = "^2.1.6"
-aiodns = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
+pytest = "^6.1"
 requests = "^2.23"
 
 [tool.poetry.scripts]

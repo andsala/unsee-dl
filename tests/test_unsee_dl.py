@@ -1,4 +1,4 @@
-from unsee_dl.unsee_dl import get_album_id_from_url, is_beta_album_id
+from unsee_dl.unsee import get_album_id_from_url, is_beta_album_id
 
 
 def test_get_album_id_from_url():
