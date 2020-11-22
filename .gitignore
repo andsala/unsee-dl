@@ -9,3 +9,6 @@ dist/
 *.egg/
 *.egg-info/
 MANIFEST
+/Pipfile
+/Pipfile.lock
+/unsee_dl/flycheck_unsee_dl.py
