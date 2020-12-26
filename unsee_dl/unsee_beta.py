@@ -70,6 +70,7 @@ fragment AuthPayloadFragment on AuthPayload {
             image = UnseeImage(
                 album_id, album_image["id"], self.out_path, self.group_album
             )
+            ## Problematic line | recieve error Invalid url
             await self._download_and_save_image(image, album_image["urlBig"])
 
     async def _create_session(self, album_id):
@@ -131,7 +132,7 @@ fragment ChatFragment on Chat {
         gql_body = {
             "operationName": "sessionCreate",
             "variables": {
-                "input": {"chat": album_id, "referrer": "https://unsee.cc/"}
+                "input": {"chat": album_id, "referrer": "https://unsee.cc/graphql"}
             },
             "query": """
 mutation sessionCreate($input: SessionCreateInput!) {
