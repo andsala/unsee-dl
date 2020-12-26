@@ -4,7 +4,7 @@ import aiohttp
 
 from unsee_dl.unsee import UnseeImage
 
-_GRAPHQL_URL = "https://api.unsee.cc/graphql"
+_GRAPHQL_URL = "https://unsee.cc/graphql"
 
 
 class Client:
@@ -62,7 +62,7 @@ fragment AuthPayloadFragment on AuthPayload {
 
     async def download_album(self, album_id):
         """
-        Download an album from unsee beta
+        Download an album from unsee betahttps://unsee.cc/image?id=ucGZtl0GozsxdrRf&size=small
         :param album_id: album id
         :type album_id: str
         """
@@ -131,7 +131,7 @@ fragment ChatFragment on Chat {
         gql_body = {
             "operationName": "sessionCreate",
             "variables": {
-                "input": {"chat": album_id, "referrer": "https://beta.unsee.cc/"}
+                "input": {"chat": album_id, "referrer": "https://unsee.cc/"}
             },
             "query": """
 mutation sessionCreate($input: SessionCreateInput!) {
