@@ -4,7 +4,8 @@ import aiohttp
 
 from unsee_dl.unsee import UnseeImage
 
-_GRAPHQL_URL = "https://unsee.cc/graphql"
+_DOMAIN = "https://unsee.cc/"
+_GRAPHQL_URL = _DOMAIN + "graphql"
 
 
 class Client:
@@ -66,12 +67,13 @@ fragment AuthPayloadFragment on AuthPayload {
         :param album_id: album id
         :type album_id: str
         """
+        # problematic block generating invalid url error.
+        # Fixed by dgndgn with patch 
         async for album_image in self._original_size_images(album_id):
             image = UnseeImage(
                 album_id, album_image["id"], self.out_path, self.group_album
             )
-            ## Problematic line | recieve error Invalid url
-            await self._download_and_save_image(image, album_image["urlBig"])
+            await self._download_and_save_image(image, _DOMAIN+album_image["urlBig"])
 
     async def _create_session(self, album_id):
         # getSessions
