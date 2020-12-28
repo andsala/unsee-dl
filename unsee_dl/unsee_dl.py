@@ -8,7 +8,7 @@ from aiohttp import WSMessage
 from . import names
 from .unsee import UnseeImage
 
-_UNSEE_WEBSOCKET_URL = "wss://old-ws.unsee.cc/{}/"
+_UNSEE_WEBSOCKET_URL = "wss://old.unsee.cc/{}/"
 
 
 class Client:

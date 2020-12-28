@@ -4,7 +4,8 @@ import aiohttp
 
 from unsee_dl.unsee import UnseeImage
 
-_GRAPHQL_URL = "https://api.unsee.cc/graphql"
+_DOMAIN = "https://unsee.cc/"
+_GRAPHQL_URL = _DOMAIN + "graphql"
 
 
 class Client:
@@ -62,15 +63,17 @@ fragment AuthPayloadFragment on AuthPayload {
 
     async def download_album(self, album_id):
         """
-        Download an album from unsee beta
+        Download an album from unsee betahttps://unsee.cc/image?id=ucGZtl0GozsxdrRf&size=small
         :param album_id: album id
         :type album_id: str
         """
+        # problematic block generating invalid url error.
+        # Fixed by dgndgn with patch 
         async for album_image in self._original_size_images(album_id):
             image = UnseeImage(
                 album_id, album_image["id"], self.out_path, self.group_album
             )
-            await self._download_and_save_image(image, album_image["urlBig"])
+            await self._download_and_save_image(image, _DOMAIN+album_image["urlBig"])
 
     async def _create_session(self, album_id):
         # getSessions
@@ -131,7 +134,7 @@ fragment ChatFragment on Chat {
         gql_body = {
             "operationName": "sessionCreate",
             "variables": {
-                "input": {"chat": album_id, "referrer": "https://beta.unsee.cc/"}
+                "input": {"chat": album_id, "referrer": "https://unsee.cc/graphql"}
             },
             "query": """
 mutation sessionCreate($input: SessionCreateInput!) {

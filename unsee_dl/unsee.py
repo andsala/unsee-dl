@@ -65,15 +65,15 @@ class UnseeImage:
 
         return out_path.joinpath(file_basename)
 
-
+# Defines image and album urls to get from
 def get_album_id_from_url(album_url):
     url = urlparse(album_url)
-    if url.netloc in ("", "unsee.cc"):  # old unsee.cc
+    if url.netloc in ("old.unsee.cc"):  # old unsee is now: old.unsee.cc < removed empty ""
         path = [path for path in url.path.split("/") if len(path) > 0]
         if len(path) < 1:
             return None
         return path[0]
-    elif url.netloc in ("app.unsee.cc", "beta-app.unsee.cc"):  # new frontend or beta
+    elif url.netloc in ("","unsee.cc"):  # beta unsee is now: unsee.cc < removed empty ""
         return url.fragment
     return None
 
