@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "unsee-dl"
-version = "1.2.5"
+version = "1.2.6"
 description = "unsee.cc downloader"
 license = "MIT"
 authors = ["Andrea Salamone <andrea.sala96@gmail.com>"]
