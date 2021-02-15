@@ -209,16 +209,14 @@ query getAlbum($chat: ID!) {
     __typename
   }
 }
-
 fragment ImageFragment on Image {
-  id
-  session
-  created
-  updated
-  url(size: small)
-  urlBig: url(size: big)
-  hash
-  __typename
+    id
+    session
+    created
+    url(size: small)
+    urlBig: url(size: big)
+    hash
+    __typename
 }
 """,
         }
