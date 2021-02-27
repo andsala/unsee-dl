@@ -2,10 +2,11 @@ import logging
 
 import aiohttp
 
-from unsee_dl.unsee import UnseeImage
+from unsee_dl.unsee_old import UnseeImage
 
-_DOMAIN = "https://unsee.cc/"
-_GRAPHQL_URL = _DOMAIN + "graphql"
+DOMAIN = "unsee.cc"
+_BASE_URL = f"https://{DOMAIN}/"
+_GRAPHQL_URL = _BASE_URL + "graphql"
 
 
 class Client:
@@ -73,7 +74,7 @@ fragment AuthPayloadFragment on AuthPayload {
             image = UnseeImage(
                 album_id, album_image["id"], self.out_path, self.group_album
             )
-            await self._download_and_save_image(image, _DOMAIN+album_image["urlBig"])
+            await self._download_and_save_image(image, _BASE_URL + album_image["urlBig"])
 
     async def _create_session(self, album_id):
         # getSessions
