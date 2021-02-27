@@ -11,10 +11,7 @@ def get_album_id_from_url(album_url):
     """
     url = urlparse(album_url)
     if url.netloc in (UNSEE_OLD_DOMAIN,):  # old unsee is now "old.unsee.cc"
-        path = [path for path in url.path.split("/") if len(path) > 0]
-        if len(path) < 1:
-            return None
-        return path[0]
+        return url.fragment
     elif url.netloc in ("", UNSEE_NEW_DOMAIN,):  # beta unsee is now: unsee.cc < removed empty ""
         return url.fragment
     return None

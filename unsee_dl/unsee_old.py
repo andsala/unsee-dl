@@ -113,7 +113,7 @@ class ClientOld:
             await ws_settings.send_str("{}")
             data = await ws_settings.receive()
 
-            settings = json.loads(data.data, encoding="utf-8")
+            settings = json.loads(str(data.data, encoding="utf-8"))
 
             logging.info("[ws_settings] {}".format(settings))
 
@@ -126,7 +126,7 @@ class ClientOld:
             data: WSMessage
             async for data in ws_pubsub:
                 if data.type == aiohttp.WSMsgType.BINARY:
-                    message = json.loads(data.data, encoding="utf-8")
+                    message = json.loads(str(data.data, encoding="utf-8"))
                     logging.debug("[ws_pubsub] Received message: {}".format(message))
 
                     if message["type"] == "image":
