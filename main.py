@@ -30,12 +30,12 @@ async def download_old(album_ids: List[str], out_dir: str, group_album: bool):
 
 async def download_new(album_ids: List[str], out_dir: str, group_album: bool):
     async with ClientNew(out_path=out_dir, group_album=group_album) as client:
-        await client.anonymous_login()
 
         for album_id in album_ids:
             # noinspection PyBroadException
             try:
                 print("Downloading album {:s}...".format(album_id))
+                await client.anonymous_login(album_id)
                 await client.download_album(album_id)
                 logging.info("Download completed for album {}.".format(album_id))
             except Exception as ex:

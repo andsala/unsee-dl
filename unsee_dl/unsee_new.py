@@ -5,8 +5,7 @@ import aiohttp
 from unsee_dl.unsee_old import UnseeImage
 
 DOMAIN = "unsee.cc"
-_BASE_URL = f"https://{DOMAIN}/"
-_GRAPHQL_URL = _BASE_URL + "graphql"
+_BASE_URL = f"https://{DOMAIN}"
 
 
 class Client:
@@ -35,32 +34,15 @@ class Client:
         if self.session and self._did_enter_with:
             await self.session.close()
 
-    async def anonymous_login(self):
+    async def anonymous_login(self, album_id):
         """
         Login with an anonymous token
         """
-        gql_body = {
-            "operationName": "getToken",
-            "variables": {},
-            "query": """
-query getToken($identity: ID, $code: ID, $refreshToken: ID, $name: String) {
-  getToken(identity: $identity, code: $code, refreshToken: $refreshToken, name: $name) {
-    ...AuthPayloadFragment
-    __typename
-  }
-}
-
-fragment AuthPayloadFragment on AuthPayload {
-  token
-  refreshToken
-  __typename
-}
-""",
-        }
-        async with self.session.post(_GRAPHQL_URL, json=gql_body) as response:
+        url = f"{_BASE_URL}/auth?chat={album_id}"
+        async with self.session.get(url) as response:
             content = await response.json()
-            tokens = content["data"]["getToken"]
-            self.token = tokens["token"]
+            token = content["token"]
+            self.token = token
 
     async def download_album(self, album_id):
         """
@@ -74,116 +56,7 @@ fragment AuthPayloadFragment on AuthPayload {
             image = UnseeImage(
                 album_id, album_image["id"], self.out_path, self.group_album
             )
-            await self._download_and_save_image(image, _BASE_URL + album_image["urlBig"])
-
-    async def _create_session(self, album_id):
-        # getSessions
-        headers = {"authorization": f"Bearer {self.token}"}
-        gql_body = {
-            "operationName": "getSessions",
-            "variables": {"filter": {"chat": album_id}},
-            "query": """
-query getSessions($filter: SessionFilter!, $pagination: Pagination) {
- getSessions(filter: $filter, pagination: $pagination) {
- ...SessionFragment
- __typename
- }
-}
-
-fragment SessionFragment on Session {
- id
- role
- status
- chat {
- ...ChatFragment
- __typename
- }
- online
- created
- viewing
- user
- name
- __typename
-}
-
-fragment ChatFragment on Chat {
- id
- title
- ttl
- ttlLeft
- status
- description
- created
- updated
- allowDownloads
- allowUploads
- watermarkIp
- deleteAfter
- __typename
-}
-""",
-        }
-        async with self.session.post(
-            _GRAPHQL_URL, json=gql_body, headers=headers
-        ) as response:
-            content = await response.json()
-            if "errors" in content and len(content["errors"]) > 0:
-                raise Exception(content["errors"])
-
-        # create session
-        headers = {"authorization": f"Bearer {self.token}"}
-        gql_body = {
-            "operationName": "sessionCreate",
-            "variables": {
-                "input": {"chat": album_id, "referrer": "https://unsee.cc/graphql"}
-            },
-            "query": """
-mutation sessionCreate($input: SessionCreateInput!) {
- sessionCreate(input: $input) {
- ...SessionFragment
- __typename
- }
-}
-
-fragment SessionFragment on Session {
- id
- role
- status
- chat {
- ...ChatFragment
- __typename
- }
- online
- created
- viewing
- user
- name
- __typename
-}
-
-fragment ChatFragment on Chat {
- id
- title
- ttl
- ttlLeft
- status
- description
- created
- updated
- allowDownloads
- allowUploads
- watermarkIp
- deleteAfter
- __typename
-}
-""",
-        }
-        async with self.session.post(
-            _GRAPHQL_URL, json=gql_body, headers=headers
-        ) as response:
-            content = await response.json()
-            if "errors" in content and len(content["errors"]) > 0:
-                raise Exception(content["errors"])
+            await self._download_and_save_image(image, _BASE_URL + "/" + album_image["urlBig"])
 
     async def _original_size_images(self, album_id):
         """
@@ -197,33 +70,108 @@ fragment ChatFragment on Chat {
         # await self._create_session(album_id)
 
         headers = {"authorization": f"Bearer {self.token}"}
-        gql_body = {
-            "operationName": "getAlbum",
-            "variables": {"chat": album_id},
-            "query": """
+        url = f"{_BASE_URL}/graphql"
+
+        ql_body = """
 query getAlbum($chat: ID!) {
   getAlbum(chat: $chat) {
+    chat {
+      ...ChatFragment
+      __typename
+    }
     images {
       ...ImageFragment
+      __typename
+    }
+    sessions {
+      ...SessionFragment
+      __typename
+    }
+    messages {
+      ...MessageFragment
+      __typename
+    }
+    pins {
+      ...PinFragment
       __typename
     }
     __typename
   }
 }
-fragment ImageFragment on Image {
-    id
-    session
-    created
-    url(size: small)
-    urlBig: url(size: big)
-    hash
-    __typename
+
+fragment ChatFragment on Chat {
+  id
+  title
+  ttl
+  ttlLeft
+  status
+  description
+  created
+  allowDownloads
+  allowUploads
+  watermarkIp
+  deleteAfter
+  __typename
 }
-""",
+
+fragment ImageFragment on Image {
+  id
+  session
+  chat
+  created
+  url(size: small)
+  urlBig: url(size: big)
+  hash
+  width
+  height
+  priority
+  __typename
+}
+
+fragment SessionFragment on Session {
+  id
+  role
+  status
+  chat
+  online
+  proxy
+  created
+  user
+  name
+  __typename
+}
+
+fragment MessageFragment on Message {
+  id
+  session
+  recipient
+  reply
+  image
+  pin
+  text
+  status
+  created
+  __typename
+}
+
+fragment PinFragment on Pin {
+  id
+  image
+  session
+  x
+  y
+  created
+  __typename
+}
+"""
+        body = {
+            "operationName": "getAlbum",
+            "query": ql_body,
+            "variables": {
+                "chat": album_id
+            }
         }
-        async with self.session.post(
-            _GRAPHQL_URL, json=gql_body, headers=headers
-        ) as response:
+        async with self.session.post(url, json=body, headers=headers) as response:
             content = await response.json()
             if "errors" in content and len(content["errors"]) > 0:
                 raise Exception(content["errors"])
